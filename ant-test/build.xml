@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!--
+
+	This Ant script tests Woden against the W3C WSDL 2.0 Test Suite.
+	
+	ChangeLog:
+	
+	2006-05-18 Arthur Ryman (ryman@ca.ibm.com, arthur.ryman@gmail.com)
+	- added schema validation of results
+	
+	2006-05-19 Arthur Ryman (ryman@ca.ibm.com, arthur.ryman@gmail.com)
+	- updated script so that Woden is a sibling project of W3C desc in the workspace.
+	
+	2006-06-11 Arthur Ryman (ryman@ca.ibm.com, arthur.ryman@gmail.com)
+	- added report output and targets to run on good and bad documents
+-->
+<project default="main" basedir=".">
+
+	<property name="woden.dir" location=".." />
+
+	<property file="${woden.dir}/build.properties" />
+	<property name="lib.dir" location="${woden.dir}/build" />
+	<property name="downloads.lib.dir" location="${woden.dir}/downloads/lib" />
+
+	<property name="desc.dir" location="${woden.dir}/../desc" />
+	<property name="test-suite.dir" location="${desc.dir}/test-suite" />
+	<property name="xsd.dir" location="${test-suite.dir}/interchange" />
+	<property name="xmlcatalog.dir" location="${test-suite.dir}/xmlcatalog" />
+
+
+	<taskdef name="validatewsdl20" classname="org.apache.woden.ant.ValidateWSDL20" classpath="${lib.dir}/woden.jar;${lib.dir}/woden-ant.jar;${downloads.lib.dir}/${XmlSchemaFile};${downloads.lib.dir}/${XercesJar1};${downloads.lib.dir}/${XercesJar2}" />
+
+	<target name="main" description="---> Validate test suite, generates interchange format, and validates results" depends="documents-good, documents-bad, schemavalidate-results" />
+
+	<target name="documents-good" description="---> Validates W3C WSDL 2.0 good document test suite and outputs component model">
+		<mkdir dir="results" />
+		<validatewsdl20 dir="${test-suite.dir}/documents/good" includes="**/*.wsdl" cm="yes" cmdir="results" report="documents-good-report.xml" />
+		<zip destfile="test-suite-results.zip" basedir="results" />
+	</target>
+
+	<target name="documents-bad" description="---> Validates W3C WSDL 2.0 bad document test suite and outputs report">
+		<validatewsdl20 dir="${test-suite.dir}/documents/bad" includes="**/*.wsdl" cm="no" report="documents-bad-report.xml" />
+	</target>
+
+	<target name="schemavalidate-results" description="---> Validates component model interchange format results againt schema.">
+		<schemavalidate failonerror="no">
+			<schema namespace="http://www.w3.org/XML/1998/namespace" file="${xsd.dir}/xml.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component" file="${xsd.dir}/wsdlcm.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component-base" file="${xsd.dir}/wsdlcm-base.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component-extensions" file="${xsd.dir}/wsdlcm-extensions.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component-http" file="${xsd.dir}/wsdlcm-http.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component-rpc" file="${xsd.dir}/wsdlcm-rpc.xsd" />
+			<schema namespace="http://www.w3.org/2002/ws/desc/wsdl/component-soap" file="${xsd.dir}/wsdlcm-soap.xsd" />
+			<fileset dir="results">
+				<include name="**/*.wsdlcm" />
+			</fileset>
+		</schemavalidate>
+	</target>
+
+	<target name="schemavalidate-validation-reports">
+		<schemavalidate failonerror="no">
+			<schema namespace="http://www.w3.org/2006/06/wsdl/ValidationReport" file="${xmlcatalog.dir}/wsdl/ValidationReport.xsd" />
+			<fileset dir=".">
+				<include name="*-report.xml" />
+			</fileset>
+		</schemavalidate>
+	</target>
+
+
+	<!-- ================================= 
+          target: canonicalize-results              
+         ================================= -->
+	<target name="canonicalize-results" description="--> Canonicalizes component interchange format results">
+		<xslt style="${test-suite.dir}/results/canonicalize-wsdlcm.xslt" includes="**/*.wsdlcm" extension=".wsdlcm1" destdir="."/>
+		<xslt style="${test-suite.dir}/results/canonicalize-id-wsdlcm.xslt" includes="**/*.wsdlcm1" extension=".wsdlcm2" destdir="."/>
+	</target>
+	
+	<target name="compare">
+        <xslt style="${test-suite.dir}/results/compare-wsdlcm.xslt" in="results/Chameleon-1G/getBalance.wsdlcm2"
+            out="results/Chameleon-1G/getBalance-results.xml">
+            <param name="aspirant" expression="results/Chameleon-1G/getBalance.wsdlcm2"/>
+            <param name="archetype" expression="results-old/Chameleon-1G/getBalance.wsdlcm2"/>
+        </xslt>
+
+	</target>
+
+
+
+</project>

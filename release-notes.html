@@ -1,0 +1,230 @@
+<html>
+<head></head>
+<body>
+<h1>Woden Incubating 1.0.0 M6 Release Notes</h1>
+
+This is the Milestone 6 (M6) release of <a href="http://incubator.apache.org/woden">Apache Woden</a>.<br />
+The Milestone plan is at <a href="http://incubator.apache.org/woden/dev/1.0/milestoneplan.html">http://incubator.apache.org/woden/dev/1.0/milestoneplan.html</a>.
+
+<h2>Incubation Disclaimer</h2>
+<p>
+  	The Woden project is an effort undergoing <a href="http://incubator.apache.org">incubation at the Apache 
+  	Software Foundation (ASF)</a>, sponsored by the Apache Web Services PMC. Incubation is 
+  	required of all newly accepted projects until a further review indicates 
+  	that the infrastructure, communications, and decision making process have 
+  	stabilized in a manner consistent with other successful ASF projects. While 
+  	incubation status is not necessarily a reflection of the completeness or 
+  	stability of the code, it does indicate that the project has yet to be fully 
+  	endorsed by the ASF.
+</p>
+
+<h2>Key points</h2>
+<p>
+    Milestone releases will deliver Woden functionality gradually, leading up to a 1.0 release.
+    The objective of a 1.0 release will be to deliver a WSDL processor that fully implements the
+	W3C WSDL 2.0 specification, including parsing WSDL 2.0 documents into the WSDL 2.0 component
+	model and validating their syntax and semantics.
+</p>
+<p>
+Note that the WSDL 2.0 "spec" is currently at W3C Candidate Recommendation and may move to 
+Proposed Recommendation towards the end of 2006, then full W3C Recommendation (i.e. a specification)
+sometime in early 2007.
+</p>
+<p>
+	The M6 release delivers an implementation of the Woden API based on DOM and 
+	Xerces parsing and an implementation based on AXIOM and StAX parsing.
+</p>
+<p>
+	The DOM implementation of Woden has been integrated into Axis2 and SOAP messaging
+	based on WSDL 2.0 documents was successfully tested by the WSDL 2.0 working group
+	at a W3C Interoperability event in July 2006. Work will commence soon to integrate the
+	AXIOM/StAX implementation of Woden into Axis2.
+</p>
+<p>
+	Some remaining objectives include converting WSDL 1.1 documents into the WSDL 2.0 component 
+	model so they can be manipulated via the Woden API, serializing Woden's WSDL object model to
+	WSDL 2.0 documents and full support for programmatically creating and modifying WSDL 2.0 documents.
+</p>
+<p>
+	The Woden framework and programming model are similar to WSDL4J, such as the
+	factory, reader and WSDL xml object model. Other features have been reused or adapted too,
+	such as the extension mechanism.
+</p>
+
+<h2>What's new in this release?</h2>
+
+<p>This release includes the following new features:</p>
+<ul>
+    <li>
+        An implementation of the Woden API based on StAX parsing and AXIOM. This implementation uses the 
+        same programming model (API) as the DOM implementation, however a different WSDLFactory implementation
+        class is needed to instantiate the StAX/AXIOM implementation (i.e. OMWSDLFactory).
+    </li>  
+    <li>
+        The way that elements are created and added by the Woden API has been change to better
+        support the scoping described by the WSDL 2.0 specification. The createXXXElement factory
+        methods on <code>DescriptionElement</code> have been removed and instead the addXXXElement 
+        methods present on all parent elements instantiate and add the appropriate child elements.
+        The relevant child elements have been changed to store their name as an NCName rather than 
+        a QName, but the QName is still available via the API (i.e. derived from the target namespace). 
+    </li> 
+</ul>
+
+<h2>Current Release Structure</h2>
+
+<p>
+	The binary distribution contains three Woden jar files described below:<br />
+	<ul>
+		<li>
+			woden-api.jar - Contains only the public Woden API (not yet final). 
+			This jar is suitable for those that wish to create their own implementation of 
+			the API.
+		</li>
+		<li>
+			woden.jar     - Contains the public Woden API (not yet final) and current DOM 
+			and AXIOM implementations.
+		</li>
+		<li>
+			woden-ant.jar - Contains the Ant task ValidateWSDL20.
+		</li>
+	</ul>
+	Woden depends on the following libraries and these are included in the binary distribution:
+	<ul>
+	    <li>
+            Apache WS Commons XmlSchema 1.1 (for representing schemas in the Woden API)
+	    </li>
+	    <li>
+            Apache Xerces 2.8.1 (used by XmlSchema and by the DOM implementation of Woden)
+	    </li>
+	    <li>
+            Apache WS Commons AXIOM 1.1
+	    </li>
+	    <li>
+            Apache Commons Logging API 1.1 (used by the AXIOM implementation of Woden)
+	    </li>
+	    <li>
+	        StAX 1.0.1 API and the Woodstox 3.0.1 implementation  (used by the AXIOM implementation of Woden)
+	    </li>
+	    <li>
+	        WSDL4J 1.6.1 (used by the standalone WSDL 1.1 conversion program)
+	    </li>
+	</ul>
+	The source distribution contains all of the Woden source code; the API source, the implementation source and
+	the Ant tasks source. It does not contain the dependent libraries, but the build.properties file specifies
+	where they can be obtained from. 
+</p>
+	
+
+<h2>What's still to do?</h2>
+
+<p>Please see a list of what we think needs doing - and please consider helping out if 
+you're interested & able!</p>
+<ul>
+	<li>
+		Work is well underway on a URL resolver mechanism.
+	</li>
+	<li>
+	    Unit tests for the WSDL extensions are mostly complete, but tests for the core WSDL 2.0
+	    Component model and its underlying Element model are still largely outstanding.
+	    These are still crucially important for regression testing further development and 
+	    will remain a major focus item for the next milestone. 
+	</li>
+	<li>
+		The User Guide added after M3 needs updating to reflect the functional additions up to M6.
+	</li>
+	<li>
+		Technical design documentation for developers needs to be created, probably on the Woden Wiki. 
+	</li>
+	<li>
+		Integrating the stand-alone WSDL 1.1 to 2.0 converter tool into Woden to produce
+		a Woden WSDL 2.0 object model from a parsed WSDL 1.1. document. 
+	</li>
+  	<li>
+  		Validation of MEPs and extension elements (such as those for SOAP and HTTP bindings) 
+  		has not yet been implemented.
+  	</li>
+  	<li>
+  		Serialization (e.g. WSDLWriter) has not been implemented.
+  	</li>
+  	<li>
+		Support for non-XML Schema type systems has not yet been implemented.
+	</li>
+	<li>
+	    See the Woden JIRA issues at <a href="http://issues.apache.org/jira/browse/Woden">http://issues.apache.org/jira/browse/Woden</a>.
+	</li>
+  	<li>
+  	    See also the Task List on the Woden wiki at <a href="http://wiki.apache.org/ws/FrontPage/Woden/TaskList">http://wiki.apache.org/ws/FrontPage/Woden/TaskList</a>.
+  	</li>
+</ul>
+
+<h2>Example Usage</h2>
+
+<pre>
+   WSDLFactory factory = WSDLFactory.newInstance();
+   WSDLReader reader = factory.newWSDLReader();
+   reader.setFeature(ReaderFeatures.VALIDATION_FEATURE_ID, true); &lt;-- enable WSDL 2.0 validation (optional) 
+   DescriptionElement desc = reader.readWSDL(wsdlLoc);            &lt;-- the &lt;description&gt; element
+   Description descComp = desc.toComponent();                     &lt;-- the Description component
+</pre>
+   A custom error handler can also be specified as follows:<br />
+<pre>
+   DescriptionElement desc = reader.readWSDL(wsdlLoc, handler);
+</pre>
+   WSDL can be now be parsed from a DOM Element, DOM Document or InputSource using a WSDLSource object:<br />
+<pre>
+   WSDLFactory factory = WSDLFactory.newInstance();
+   WSDLReader reader = factory.newWSDLReader();
+   reader.setFeature(WSDLReader.FEATURE_VALIDATION, true);
+   WSDLSource wsdlSource = reader.createWSDLSource();
+   wsdlSource.setBaseURI(wsdlURI);
+   wsdlSource.setSource(docEl);
+   DescriptionElement desc = reader.readWSDL(wsdlSource);
+   Description descComp = desc.toComponent();
+</pre>
+
+<h2>Known Problems/Issues</h2>
+
+<ol>
+	<li>
+	    The "testSchemaId1G" testcase from the W3C WSDL 2.0 test suite is failing since the 
+	    change to XmlSchema 1.1. This appears to be due to a fragid specified for the
+	    schemaLocation in a schema import. It requires investigation and resolving, possibly
+	    in XmlSchema rather than Woden.
+   	</li>
+   	<li>
+   	    The StAX/AXIOM implementation is less complete than the Xerces/DOM implementation.
+   	    For example, extensions are not yet supported as this is awaiting the removal of
+   	    some DOM dependencies from the Woden API. This work is underway and will be completed 
+   	    for Milestone 7. 
+   	</li>
+	<li>
+		Currently, the only type system supported is W3C XML Schema and this is exposed at 
+   		certain points of the API (through the use of the XmlSchema interface). Later on we
+   		will consider more general, extendable support for other type systems.
+   	</li>
+	<li>
+		There are still failures in the W3C test suite results for the Component Interchange format testing 
+		being conducted by the WSDL 2.0 Working Group. Some of these were resolved at the
+		W3C WSDL 2.0 Interop event in early July 2006, but the remainder require investigation.
+	</li>
+	<li>
+		There are insufficient test cases in the test suite for M6. The suite requires more 
+   		junit tests for the Woden framework and the W3C WSDL test suite is in the process of 
+   		being annotated with assertions that tie each testcase to a validation 
+   		rule specified in the WSDL 2.0 spec.  
+	</li>
+	<li>
+	    The current extension mechanism requires statically typed interfaces for each type of
+	    extension. This requires the client application to know each required extension and
+	    its API. Some investigation has been done on a more flexible, dynamic extension 
+	    mechanism and any changes that arise from this should be delivered in M7.
+	</li>
+</ol>
+
+</body>
+</html>
+
+
+
+
+ 

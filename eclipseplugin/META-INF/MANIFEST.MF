@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %_PLUGIN_NAME
+Bundle-SymbolicName: org.apache.woden; singleton:=true
+Bundle-Version: *VERSION_NUMBER*
+Bundle-Vendor: %_PLUGIN_PROVIDER
+Bundle-Localization: plugin
+Eclipse-AutoStart: true
+Export-Package: javax.xml.namespace,
+ org.apache.woden,
+ org.apache.woden.internal,
+ org.apache.woden.internal.schema,
+ org.apache.woden.internal.util,
+ org.apache.woden.internal.util.dom,
+ org.apache.woden.internal.wsdl20,
+ org.apache.woden.schema,
+ org.apache.woden.tests,
+ org.apache.woden.tests.wsdl20,
+ org.apache.woden.wsdl20,
+ org.apache.woden.wsdl20.extensions,
+ org.apache.woden.wsdl20.fragids,
+ org.apache.woden.wsdl20.xml
+Require-Bundle: org.apache.xerces

@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Copyright 2005 Apache Software Foundation 
+ 
+  Licensed under the Apache License, Version 2.0 (the "License"); 
+  you may not use this file except in compliance with the License. 
+  You may obtain a copy of the License at 
+  
+      http://www.apache.org/licenses/LICENSE-2.0 
+  
+  Unless required by applicable law or agreed to in writing, software 
+  distributed under the License is distributed on an "AS IS" BASIS, 
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+  See the License for the specific language governing permissions and 
+  limitations under the License.
+  
+  TODO:
+  	- include XMLSchema from XS commons into woden api and impl jars.
+  	- SVN extract and tag.
+  	- Automatic upload to download server and website.
+ -->
+<project name="woden" default="buildImplAndAPI" basedir=".">
+	<property file="${basedir}/build.properties" />
+	<property name="build.home" value="." />
+	<property name="build.output" value="${build.home}/build" />
+	<property name="version" value="1.0.0" />
+	<property name="downloads" value="${build.home}/downloads" />
+	<property name="libraryDir" value="${downloads}/lib" />
+	<property name="build.classes" value="${build.output}/classes" />
+	<property name="build.classes.api" value="${build.output}/classesapi" />
+	<property name="build.classes.ant" value="${build.output}/classesant" />
+	<property name="build.classes.test" value="${build.output}/classestest" />
+	<property name="test.results" value="${build.output}/test-results" />
+	<property name="src.home" value="${build.home}/src" />
+	<property name="testsrc.home" value="${build.home}/test/" />
+	<property name="eclipseplugin" value="${build.home}/eclipseplugin" />
+	<property name="manifestfile" value="META-INF/MANIFEST.MF" />
+	<property name="build.javadoc" value="${build.output}/Javadoc" />
+
+	<!-- Default to a nightly build -->
+	<property name="buildType" value="N" />
+
+	<target name="buildAll" depends="clean, init, buildAPI, buildImplAndAPI, buildANT, buildEclipsePlugin, buildJavadoc, buildTests, runTests" />
+
+	<target name="distBuild" depends="buildAll, createArchives, createChecksums" />
+
+	<target name="showProperties">
+		<echo message="basedir=${basedir}" />
+		<echo message="build.output=${build.output}" />
+		<echo message="downloads=${downloads}" />
+		<echo message="libraryDir=${libraryDir}" />
+		<echo message="build.classes=${build.classes}" />
+		<echo message="build.classes.api=${build.classes.api}" />
+		<echo message="build.classes.ant=${build.classes.ant}" />
+		<echo message="build.classes.test=${build.classes.test}" />
+		<echo message="test.results=${test.results}" />
+		<echo message="src.home=${src.home}" />
+		<echo message="testsrc.home=${testsrc.home}" />
+		<echo message="eclipseplugin=${eclipseplugin}" />
+		<echo message="manifestfile=${manifestfile}" />
+		<echo message="build.javadoc=${build.javadoc}" />
+		<echo message="XmlSchemaURL=${XmlSchemaURL}" />
+		<echo message="XmlSchemaFile=${XmlSchemaFile}" />
+		<echo message="XercesURL=${XercesURL}" />
+		<echo message="XercesFile=${XercesFile}" />
+		<echo message="XercesJar1=${XercesJar1}" />
+		<echo message="XercesJar2=${XercesJar2}" />
+		<echo message="AntURL=${AntURL}" />
+		<echo message="AntFile=${AntFile}" />
+		<echo message="AntJar=${AntJar}" />
+		<echo message="WSDL4JURL=${WSDL4JURL}" />
+		<echo message="WSDL4JFile=${WSDL4JFile}" />
+		<echo message="AxiomApiURL=${AxiomApiURL}" />
+		<echo message="AxiomApiFile=${AxiomApiFile}" />
+		<echo message="AxiomImplURL=${AxiomImplURL}" />
+		<echo message="AxiomImplFile=${AxiomImplFile}" />
+		<echo message="CommonsLoggingURL=${CommonsLoggingURL}" />
+		<echo message="CommonsLoggingFile=${CommonsLoggingFile}" />
+		<echo message="StaxURL=${StaxURL}" />
+		<echo message="StaxFile=${StaxFile}" />
+		<echo message="WstxURL=${WstxURL}" />
+		<echo message="WstxFile=${WstxFile}" />
+		<echo message="build.home=${build.home}" />
+		<echo message="version=${version}" />
+		<echo message="milestone=${milestone}" />
+		<echo message="buildType=${buildType}" />
+		<echo message="archive.root.prefix=${archive.root.prefix}" />
+	</target>
+
+
+	<target name="init" depends="showProperties, getPreReq">
+		<tstamp>
+			<format property="timestamp" pattern="yyyyMMdd_hhmm" />
+		</tstamp>
+		<property name="defaultBuildId" value="${buildType}${timestamp}" />
+		<mkdir dir="${build.home}" />
+		<mkdir dir="${build.output}" />
+
+		<condition property="buildId" value="${version}">
+			<equals arg1="${buildType}" arg2="R" casesensitive="false" />
+		</condition>
+
+		<condition property="buildId" value="${version}M${milestone}" else="${defaultBuildId}">
+			<equals arg1="${buildType}" arg2="M" casesensitive="false" />
+		</condition>
+
+		<available classname="junit.framework.Test" property="junitAvailable" />
+
+		<property name="archiveDir" value="${build.output}/${archive.root.prefix}-${buildId}" />
+
+	</target>
+
+	<target name="informJunit" unless="junitAvailable">
+		<echo message="JUnit tests will not be compiled or run." />
+		<echo message="In order to compile and run the JUnit tests you must install junit.jar on your classpath." />
+	</target>
+
+	<!-- Get prerequisite libraries for the build. -->
+	<target name="getPreReq">
+		<mkdir dir="${downloads}" />
+		<available file="${downloads}/${XmlSchemaFile}" property="XmlSchema.exists" />
+		<available file="${downloads}/${XercesFile}" property="Xerces.exists" />
+		<available file="${downloads}/${AntFile}" property="Ant.exists" />
+		<available file="${downloads}/${WSDL4JFile}" property="WSDL4J.exists" />
+
+		<!-- The following jars are downloaded straight into the libraryDir -->
+		<available file="${libraryDir}/${AxiomApiFile}" property="AxiomApi.exists" />
+		<available file="${libraryDir}/${AxiomImplFile}" property="AxiomImpl.exists" />
+		<available file="${libraryDir}/${CommonsLoggingFile}" property="CommonsLogging.exists" />
+		<available file="${libraryDir}/${StaxFile}" property="Stax.exists" />
+		<available file="${libraryDir}/${WstxFile}" property="Wstx.exists" />
+
+		<antcall target="getXmlSchema" />
+		<antcall target="getXerces" />
+		<antcall target="getAnt" />
+		<antcall target="getWSDL4J" />
+		<antcall target="getAxiomApi" />
+		<antcall target="getAxiomImpl" />
+		<antcall target="getCommonsLogging" />
+		<antcall target="getStax" />
+		<antcall target="getWstx" />
+
+		<antcall target="extractXmlSchema" />
+
+		<!-- flatten the lib dir -->
+		<copy todir="${libraryDir}">
+			<mapper type="flatten" />
+			<fileset dir="${libraryDir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+
+		<delete includeemptydirs="true">
+			<fileset dir="${libraryDir}">
+				<include name="**/*" />
+				<exclude name="*.jar" />
+			</fileset>
+		</delete>
+	</target>
+
+	<!-- Get the latest version of XmlSchema from WS commons -->
+	<target name="getXmlSchema" unless="XmlSchema.exists">
+		<get src="${XmlSchemaURL}" dest="${downloads}/${XmlSchemaFile}" />
+	</target>
+
+	<!-- Get the latest version of Xerces and unzip it -->
+	<target name="getXerces" unless="Xerces.exists">
+		<get src="${XercesURL}" dest="${downloads}/${XercesFile}" />
+
+		<unzip src="${downloads}/${XercesFile}" dest="${libraryDir}">
+			<patternset>
+				<include name="**/${XercesJar1}" />
+				<include name="**/${XercesJar2}" />
+			</patternset>
+		</unzip>
+	</target>
+	
+	<!-- Get the latest version of Ant and unzip it -->
+	<target name="getAnt" unless="Ant.exists">
+		<get src="${AntURL}" dest="${downloads}/${AntFile}" />
+
+		<unzip src="${downloads}/${AntFile}" dest="${libraryDir}">
+			<patternset>
+				<include name="**/ant*.jar" />
+			</patternset>
+		</unzip>
+	</target>
+
+	<!-- Get the latest version of WSDL4J and unzip it -->
+	<target name="getWSDL4J" unless="WSDL4J.exists">
+		<get src="${WSDL4JURL}" dest="${downloads}/${WSDL4JFile}" />
+
+		<unzip src="${downloads}/${WSDL4JFile}" dest="${libraryDir}">
+			<patternset>
+				<include name="**/wsdl4j*.jar" />
+			</patternset>
+		</unzip>
+	</target>
+
+	<!-- Get the latest version of Axiom Api jar -->
+	<target name="getAxiomApi" unless="AxiomApi.exists">
+		<get src="${AxiomApiURL}" dest="${libraryDir}/${AxiomApiFile}" />
+	</target>
+
+	<!-- Get the latest version of Axiom Impl jar -->
+	<target name="getAxiomImpl" unless="AxiomImpl.exists">
+		<get src="${AxiomImplURL}" dest="${libraryDir}/${AxiomImplFile}" />
+	</target>
+
+	<!-- Get the latest version of Commons Logging Api jar -->
+	<target name="getCommonsLogging" unless="CommonsLogging.exists">
+		<get src="${CommonsLoggingURL}" dest="${libraryDir}/${CommonsLoggingFile}" />
+	</target>
+
+	<!-- Get the latest version of Stax API jar -->
+	<target name="getStax" unless="Stax.exists">
+		<get src="${StaxURL}" dest="${libraryDir}/${StaxFile}" />
+	</target>
+
+	<!-- Get the latest version of Wstx API jar -->
+	<target name="getWstx" unless="Wstx.exists">
+		<get src="${WstxURL}" dest="${libraryDir}/${WstxFile}" />
+	</target>
+
+	<!-- Copy the XmlSchema file to the lib dir -->
+	<target name="extractXmlSchema">
+		<copy file="${downloads}/${XmlSchemaFile}" todir="${libraryDir}" />
+	</target>
+
+	<!-- This task builds the Woden API and implementation package.
+		 This task produces woden.jar. -->
+	<target name="buildImplAndAPI" depends="init">
+		<mkdir dir="${build.classes}" />
+		<javac sourcepath=""
+			srcdir="${src.home}"
+			destdir="${build.classes}">
+			<classpath>
+				<fileset dir="${libraryDir}">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+			<include name="**/*.java" />
+			<exclude name="org/apache/woden/ant/*.java"/>
+		</javac>
+		<!-- Copy all non Java files. -->
+		<copy todir="${build.classes}">
+			<fileset dir="${src.home}">
+				<include name="**/*" />
+				<exclude name="org/apache/woden/ant/**/*"/>
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<!-- Copy the LICENSE and NOTICE files. -->
+		<mkdir dir="${build.classes}/meta-inf" />
+		<copy todir="${build.classes}/meta-inf">
+			<fileset dir="${build.home}">
+				<include name="LICENSE" />
+				<include name="NOTICE" />
+			</fileset>
+		</copy>
+
+		<jar destfile="${build.output}/${impl.name}.jar" basedir="${build.classes}" />
+	</target>
+
+	<!-- This task builds the Woden API package. 
+		 This task produces woden-api.jar. -->
+	<target name="buildAPI" depends="init">
+		<mkdir dir="${build.classes.api}" />
+		<javac sourcepath="" srcdir="${src.home}" destdir="${build.classes.api}" classpath="${libraryDir}/${XmlSchemaFile};${libraryDir}/${XercesJar1};${libraryDir}/${XercesJar2};${libraryDir}/${AxiomApiFile};${libraryDir}/${AxiomImplFile};${libraryDir}/${CommonsLoggingFile};${libraryDir}/${StaxFile};${libraryDir}/${WstxFile}">
+			<include name="**/*.java" />
+			<exclude name="**/internal/**/*.java" />
+			<exclude name="**/tool/converter/*.java" />
+			<exclude name="org/apache/woden/ant/**/*.java"/>
+		</javac>
+		<!-- Copy all non Java files. -->
+		<copy todir="${build.classes.api}">
+			<fileset dir="${src.home}">
+				<include name="**/*" />
+				<exclude name="**/*.java" />
+				<exclude name="**/internal/**/*" />
+				<exclude name="**/tool/converter/*.java" />
+				<exclude name="org.apache.woden.ant/**/*"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy the LICENSE and NOTICE files. -->
+		<mkdir dir="${build.classes.api}/meta-inf" />
+		<copy todir="${build.classes.api}/meta-inf">
+			<fileset dir="${build.home}">
+				<include name="LICENSE" />
+				<include name="NOTICE" />
+			</fileset>
+		</copy>
+
+		<jar destfile="${build.output}/${api.name}.jar" basedir="${build.classes.api}" />
+	</target>
+
+	<!-- This task builds the Woden ANT package. 
+		 This task produces woden-ant.jar. -->
+	<target name="buildANT" depends="init">
+		<mkdir dir="${build.classes.ant}" />
+		<javac sourcepath="" srcdir="${src.home}" destdir="${build.classes.ant}" classpath="${build.output}/${impl.name}.jar;${libraryDir}/${XmlSchemaFile};${libraryDir}/${XercesJar1};${libraryDir}/${XercesJar2};${libraryDir}/${AxiomApiFile};${libraryDir}/${AxiomImplFile};${libraryDir}/${CommonsLoggingFile};${libraryDir}/${StaxFile};${libraryDir}/${WstxFile}">
+		<include name="org/apache/woden/ant/**/*.java"/>
+		</javac>
+		<!-- Copy all non Java files. -->
+		<copy todir="${build.classes.ant}">
+			<fileset dir="${src.home}">
+				<include name="org.apache.woden.ant/**/*"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy the LICENSE and NOTICE files. -->
+		<mkdir dir="${build.classes.ant}/meta-inf" />
+		<copy todir="${build.classes.ant}/meta-inf">
+			<fileset dir="${build.home}">
+				<include name="LICENSE" />
+				<include name="NOTICE" />
+			</fileset>
+		</copy>
+
+		<jar destfile="${build.output}/${ant.name}.jar" basedir="${build.classes.ant}" />
+	</target>
+
+	<!-- This task builds a Woden Eclipse Plugin.
+		 The plugin contains the API and implementation. -->
+	<target name="buildEclipsePlugin" depends="init, buildImplAndAPI">
+		<copy todir="${build.classes}">
+			<fileset dir="${eclipseplugin}" />
+		</copy>
+		<replace file="${build.classes}/${manifestfile}" token="*VERSION_NUMBER*" value="${version}" />
+
+		<jar destfile="${build.output}/org.apache.woden_${version}.jar" basedir="${build.classes}" manifest="${build.classes}/${manifestfile}" />
+	</target>
+
+	<!-- This task builds the Woden tests package.
+		 This task produces woden-tests.jar. -->
+	<target name="buildTests" depends="init, informJunit, buildImplAndAPI" if="junitAvailable">
+		<mkdir dir="${build.classes.test}" />
+		<javac sourcepath="" srcdir="${testsrc.home}" destdir="${build.classes.test}" classpath="${libraryDir}/${XmlSchemaFile};${libraryDir}/${XercesJar1};${libraryDir}/${XercesJar2};${libraryDir}/${AxiomApiFile};${libraryDir}/${AxiomImplFile};${libraryDir}/${CommonsLoggingFile};${libraryDir}/${StaxFile};${libraryDir}/${WstxFile};${build.output}/${impl.name}.jar" />
+		<!-- Copy all non Java files. -->
+		<copy todir="${build.classes.test}">
+			<fileset dir="${testsrc.home}">
+				<include name="**/*" />
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+
+		<!-- Copy the LICENSE and NOTICE files. -->
+		<mkdir dir="${build.classes.test}/meta-inf" />
+		<copy todir="${build.classes.test}/meta-inf">
+			<fileset dir="${build.home}">
+				<include name="LICENSE" />
+				<include name="NOTICE" />
+			</fileset>
+		</copy>
+
+		<jar destfile="${build.output}/${test.name}.jar" basedir="${build.classes.test}" />
+	</target>
+
+	<!--  This task builds the Woden Javadoc. -->
+	<target name="buildJavadoc" depends="init">
+		<javadoc destdir="${build.javadoc}">
+			<classpath>
+				<fileset dir="${libraryDir}">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+			<fileset dir="${src.home}">
+				<include name="**/*.java" />
+				<exclude name="**/internal/**/*.java" />
+			</fileset>
+		</javadoc>
+	</target>
+
+	<!-- Tests for both DOM and StAX/OM parsers-->
+	<target name="runTests" depends="init, informJunit, buildTests" if="junitAvailable">
+		<mkdir dir="${test.results}" />
+		<junit>
+			<classpath>
+				<pathelement location="${build.classes}" />
+				<pathelement location="${build.classes.test}" />
+				<pathelement location="${libraryDir}/${XmlSchemaFile}" />
+				<pathelement location="${libraryDir}/${AxiomImplFile}" />
+				<pathelement location="${libraryDir}/${AxiomApiFile}" />
+				<pathelement location="${libraryDir}/${CommonsLoggingFile}" />
+				<pathelement location="${libraryDir}/${StaxFile}" />
+				<pathelement location="${libraryDir}/${WstxFile}" />
+				<pathelement location="${libraryDir}/${XercesJar1}" />
+				<pathelement location="${libraryDir}/${XercesJar2}" />
+			</classpath>
+			<test name="org.apache.woden.tests.AllWodenTests" haltonfailure="no" outfile="woden-${buildId}-test-results" todir="${test.results}">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<mkdir dir="${test.results}/html" />
+		<junitreport tofile="woden-${buildId}-test-results.html">
+			<fileset dir="${test.results}">
+				<include name="*.xml" />
+			</fileset>
+			<report format="noframes" todir="${test.results}/html" />
+		</junitreport>
+	</target>
+
+	<!-- Tests for DOM alone-->
+	<target name="runTestsDOM" depends="init, informJunit, buildTests" if="junitAvailable">
+		<mkdir dir="${test.results}" />
+		<junit>
+			<classpath>
+				<pathelement location="${build.classes}" />
+				<pathelement location="${build.classes.test}" />
+				<pathelement location="${libraryDir}/${XmlSchemaFile}" />
+				<pathelement location="${libraryDir}/${XercesJar1}" />
+				<pathelement location="${libraryDir}/${XercesJar2}" />
+			</classpath>
+			<test name="org.apache.woden.tests.AllWodenTestsDOM" haltonfailure="no" outfile="woden-${buildId}-test-results" todir="${test.results}">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<mkdir dir="${test.results}/html" />
+		<junitreport tofile="woden-${buildId}-test-results.html">
+			<fileset dir="${test.results}">
+				<include name="*.xml" />
+			</fileset>
+			<report format="noframes" todir="${test.results}/html" />
+		</junitreport>
+	</target>
+
+	<!-- Tests for StAX/OM alone-->
+	<target name="runTestsOM" depends="init, informJunit, buildTests" if="junitAvailable">
+		<mkdir dir="${test.results}" />
+		<junit>
+			<classpath>
+				<pathelement location="${build.classes}" />
+				<pathelement location="${build.classes.test}" />
+				<pathelement location="${libraryDir}/${XmlSchemaFile}" />
+				<pathelement location="${libraryDir}/${AxiomApiFile}" />
+				<pathelement location="${libraryDir}/${AxiomImplFile}" />
+				<pathelement location="${libraryDir}/${CommonsLoggingFile}" />
+				<pathelement location="${libraryDir}/${StaxFile}" />
+				<pathelement location="${libraryDir}/${WstxFile}" />
+				<pathelement location="${libraryDir}/${XercesJar1}" />
+				<pathelement location="${libraryDir}/${XercesJar2}" />
+			</classpath>
+			<test name="org.apache.woden.tests.AllWodenTestsOM" haltonfailure="no" outfile="woden-${buildId}-test-results" todir="${test.results}">
+				<formatter type="xml" />
+			</test>
+		</junit>
+		<mkdir dir="${test.results}/html" />
+		<junitreport tofile="woden-${buildId}-test-results.html">
+			<fileset dir="${test.results}">
+				<include name="*.xml" />
+			</fileset>
+			<report format="noframes" todir="${test.results}/html" />
+		</junitreport>
+	</target>
+
+	<!-- Create the zip and tar.gz archives -->
+	<target name="createArchives" depends="init">
+		<mkdir dir="${archiveDir}" />
+		<mkdir dir="${archiveDir}/lib" />
+		<mkdir dir="${archiveDir}/doc" />
+		<mkdir dir="${archiveDir}/doc/apiDocs" />
+		<!-- Copy the woden jars -->
+		<copy todir="${archiveDir}/lib">
+			<fileset dir="${build.output}">
+				<include name="${impl.name}.jar" />
+				<include name="${api.name}.jar" />
+				<include name="${ant.name}.jar" />
+			</fileset>
+		</copy>
+		<!-- Copy the downloaded libraries -->
+		<copy todir="${archiveDir}/lib">
+			<fileset dir="${libraryDir}">
+				<include name="**/*.jar" />
+				<exclude name="**/ant*.jar" />
+			</fileset>
+		</copy>
+		<!-- Copy the JavaDoc -->
+		<copy todir="${archiveDir}/doc/apiDocs">
+			<fileset dir="${build.javadoc}" />
+		</copy>
+		<!-- Copy the root files such as license, readme -->
+		<copy todir="${archiveDir}">
+			<fileset dir="${build.home}">
+				<include name="LICENSE" />
+				<include name="LICENSE.dom" />
+				<include name="LICENSE.sax" />
+				<include name="LICENSE.xerces" />
+				<include name="NOTICE" />
+				<include name="README" />
+				<include name="release-notes.html" />
+			</fileset>
+		</copy>
+
+		<antcall target="createZip" />
+		<antcall target="createTarGzBz2" />
+		<antcall target="createSrcZip"/>
+		<antcall target="createSrcTarGzBz2" />
+	</target>
+
+	<!-- Builds a zip of the distributable dir -->
+	<!-- This target is not meant to be called on its own -->
+	<target name="createZip" depends="init">
+		<zip destfile="${build.output}/${archive.name}-${buildId}.zip">
+            <zipfileset dir="${archiveDir}" prefix="${archive.root.prefix}-${buildId}"/>
+        </zip>
+	</target>
+
+	<!-- Builds a tar.gz and tar.bz2 of the distributable dir -->
+	<!-- This target is not meant to be called on its own -->
+	<target name="createTarGzBz2" depends="init">
+		<tar destfile="${build.output}/${archive.name}-${buildId}.tar">
+			<tarfileset dir="${archiveDir}" prefix="${archive.root.prefix}-${buildId}"/>
+		</tar>
+		<gzip destfile="${build.output}/${archive.name}-${buildId}.tar.gz" src="${build.output}/${archive.name}-${buildId}.tar" />
+		<bzip2 destfile="${build.output}/${archive.name}-${buildId}.tar.bz2" src="${build.output}/${archive.name}-${buildId}.tar" />
+		<delete file="${build.output}/${archive.name}-${buildId}.tar" />
+	</target>
+
+	<!-- Builds a zip of the source code -->
+	<!-- This target is not meant to be called on its own -->
+	<target name="createSrcZip" depends="init">
+		<zip destfile="${build.output}/${archive.name}-${buildId}-src.zip">
+		    <zipfileset dir="${build.home}/src" prefix="${archive.root.prefix}-${buildId}/src"/>
+		    <zipfileset dir="${build.home}/test" prefix="${archive.root.prefix}-${buildId}/test"/>
+		    <zipfileset dir="${build.home}/ant-test" prefix="${archive.root.prefix}-${buildId}/ant-test"/>
+		    <zipfileset dir="${build.home}/eclipseplugin" prefix="${archive.root.prefix}-${buildId}/eclipseplugin"/>
+		    <zipfileset dir="${build.home}" prefix="${archive.root.prefix}-${buildId}">
+		    	<include name="LICENSE*"/>
+		    	<include name="NOTICE"/>
+		    	<include name="README"/>
+		    	<include name="build.properties"/>
+		    	<include name="build.xml"/>
+		    	<include name="pom.xml"/>
+		    	<include name="release-notes.html"/>
+		    </zipfileset>
+		</zip>
+	</target>
+
+	<!-- Builds a tar.gz and tar.bz2 of the source code -->
+	<!-- This target is not meant to be called on its own -->
+	<target name="createSrcTarGzBz2" depends="init">
+		<tar destfile="${build.output}/${archive.name}-${buildId}-src.tar">
+			<tarfileset dir="${build.home}/src" prefix="${archive.root.prefix}-${buildId}/src"/>
+		    <tarfileset dir="${build.home}/test" prefix="${archive.root.prefix}-${buildId}/test"/>
+		    <tarfileset dir="${build.home}/ant-test" prefix="${archive.root.prefix}-${buildId}/ant-test"/>
+		    <tarfileset dir="${build.home}/eclipseplugin" prefix="${archive.root.prefix}-${buildId}/eclipseplugin"/>
+		    <tarfileset dir="${build.home}" prefix="${archive.root.prefix}-${buildId}">
+		    	<include name="LICENSE*"/>
+		    	<include name="NOTICE"/>
+		    	<include name="README"/>
+		    	<include name="build.properties"/>
+		    	<include name="build.xml"/>
+		    	<include name="pom.xml"/>
+		    	<include name="release-notes.html"/>
+		    </tarfileset>
+		</tar>
+		<gzip destfile="${build.output}/${archive.name}-${buildId}-src.tar.gz" src="${build.output}/${archive.name}-${buildId}-src.tar" />
+		<bzip2 destfile="${build.output}/${archive.name}-${buildId}-src.tar.bz2" src="${build.output}/${archive.name}-${buildId}-src.tar" />
+		<delete file="${build.output}/${archive.name}-${buildId}-src.tar" />
+	</target>
+
+	<!-- Create checksums for the zip and tar.gz files -->
+	<target name="createChecksums">
+		<checksum file="${build.output}/${archive.name}-${buildId}.zip" />
+		<checksum file="${build.output}/${archive.name}-${buildId}.zip" algorithm="SHA" fileext=".sha1" />
+		<checksum file="${build.output}/${archive.name}-${buildId}.tar.gz" />
+		<checksum file="${build.output}/${archive.name}-${buildId}.tar.gz" algorithm="SHA" fileext=".sha1" />
+		<checksum file="${build.output}/${archive.name}-${buildId}.tar.bz2" />
+		<checksum file="${build.output}/${archive.name}-${buildId}.tar.bz2" algorithm="SHA" fileext=".sha1" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.zip" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.zip" algorithm="SHA" fileext=".sha1" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.tar.gz" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.tar.gz" algorithm="SHA" fileext=".sha1" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.tar.bz2" />
+		<checksum file="${build.output}/${archive.name}-${buildId}-src.tar.bz2" algorithm="SHA" fileext=".sha1" />
+	</target>
+
+	<!-- A clean target to be run before builds. -->
+	<target name="clean">
+		<delete dir="${build.classes}" />
+		<delete dir="${build.classes.api}" />
+		<delete dir="${build.classes.ant}" />
+		<delete dir="${build.classes.test}" />
+		<delete dir="${build.output}" />
+	</target>
+
+</project>

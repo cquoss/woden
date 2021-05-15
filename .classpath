@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/xml-apis.jar"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME/plugins/org.apache.ant_1.6.5/lib/ant.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/XmlSchema-1.1.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/wsdl4j.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/axiom-api-1.1.1.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/axiom-impl-1.1.1.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/commons-logging-api-1.1.jar"/>
+	<classpathentry kind="lib" path="downloads/lib/wstx-asl-3.0.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

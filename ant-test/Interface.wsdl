@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:description targetNamespace="http://example.org/"
+	xmlns:wsdl="http://www.w3.org/2006/01/wsdl"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2006/01/wsdl wsdl20.xsd">
+
+	<wsdl:documentation>
+		This test shows a valid use of a WSDL 2.0 interface.
+	</wsdl:documentation>
+
+	<wsdl:interface name="myInterface"></wsdl:interface>
+</wsdl:description>

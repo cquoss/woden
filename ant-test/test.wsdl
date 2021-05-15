@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:description targetNamespace="http://example.org/name"
+	xmlns:name="http://example.org/name"
+	xmlns:wsdl="http://www.w3.org/2006/01/wsdl"
+	xmlns:wsoap="http://www.w3.org/2006/01/wsdl/soap"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2006/01/wsdl http://www.w3.org/2006/01/wsdl/wsdl20.xsd http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd">
+
+	<wsdl:documentation>
+		This test shows a valid use of an XML schema import.
+	</wsdl:documentation>
+
+	<wsdl:types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema"
+			targetNamespace="http://example.org/name"
+			xmlns:tns="http://example.org/name">
+
+			<element name="Name">
+				<complexType>
+					<sequence>
+						<element name="FirstName" type="string"></element>
+						<element name="LastName" type="string"></element>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="SIN" type="string" />
+
+		</schema>
+	</wsdl:types>
+
+	<wsdl:interface name="NameInterface">
+		<wsdl:operation name="getNameFromSIN"
+			pattern="http://www.w3.org/2006/01/wsdl/in-out">
+			<wsdl:input element="name:SIN" />
+			<wsdl:output element="name:Name" />
+		</wsdl:operation>
+	</wsdl:interface>
+
+	<wsdl:binding name="NameBinding" interface="name:NameInterface"
+		type="http://www.w3.org/2006/01/wsdl/soap"
+		wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP">
+		<wsdl:operation ref="name:getNameFromSIN"
+			wsoap:mep="http://www.w3.org/2003/05/soap/mep/request-response" />
+	</wsdl:binding>
+
+	<wsdl:service name="NameService" interface="name:NameInterface">
+		<wsdl:endpoint name="NameSOAPHTTPEndpoint"
+			binding="name:NameBinding" />
+	</wsdl:service>
+
+</wsdl:description>

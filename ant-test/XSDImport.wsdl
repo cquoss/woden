@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:description targetNamespace="http://example.org/XSDImport"
+	xmlns:name="http://example.org/name"
+	xmlns:wsdl="http://www.w3.org/2006/01/wsdl"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.w3.org/2006/01/wsdl
+http://www.w3.org/2006/01/wsdl/wsdl20.xsd http://www.w3.org/2001/XMLSchema
+http://www.w3.org/2001/XMLSchema.xsd">
+
+	<wsdl:documentation>
+		This test shows a valid use of an XML schema import.
+	</wsdl:documentation>
+
+	<wsdl:types>
+		<xs:import schemaLocation="name.xsd"
+			namespace="http://example.org/name" />
+	</wsdl:types>
+
+	<wsdl:interface name="Names">
+		<wsdl:operation name="getNameFromSIN"
+			pattern="http://www.w3.org/2006/01/wsdl/in-out">
+			<wsdl:input element="name:SIN" />
+			<wsdl:output element="name:Name" />
+		</wsdl:operation>
+	</wsdl:interface>
+</wsdl:description>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+ * Copyright 2006 Apache Software Foundation 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and 
+ * limitations under the License.
+-->
+<description xmlns="http://www.w3.org/2006/01/wsdl"
+	targetNamespace="http://ws.apache.woden"
+	xmlns:tns="http://ws.apache.woden"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:whttp= "http://www.w3.org/2006/01/wsdl/http"
+	xsi:schemaLocation=
+	    "http://www.w3.org/2006/01/wsdl http://www.w3.org/2006/01/wsdl/wsdl20.xsd 
+	    http://www.w3.org/2001/XMLSchema http://www.w3.org/2001/XMLSchema.xsd">
+
+	<documentation>
+	    Used by HTTPBindingOperationExtensionsTest to test the HTTPBindingOperationExtensions implementation.
+	    This is not a valid WSDL 2.0 document and is not intended to be parsed with validation
+	    enabled. It contains only the elements and attributes required to test that HTTP extensions
+	    to the binding's wsdl:operation element are parsed correctly into the expected object model and 
+	    can be accessed via the API. 
+	</documentation>
+
+	<interface name="interface1"> 
+	    <operation name="operation1" />
+	    <operation name="operation2" />
+	    <operation name="operation3" />
+	    <operation name="operation4" />
+	    <operation name="operation5" />
+	    <operation name="operation6" />
+	    <operation name="operation7" />
+	</interface>
+	
+	<binding name="binding1"
+	  interface="tns:interface1"
+	  type="http://www.w3.org/2006/01/wsdl/http">
+	  <documentation>
+	     {http query parameter separator default} omitted so will default to ampersand
+	  </documentation>
+	  
+	  <operation ref="tns:operation1"
+	      whttp:location="http://ws.apache.woden/location"
+	      whttp:ignoreUncited="true"
+	      whttp:method="GET"
+	      whttp:inputSerialization="text/plain"
+	      whttp:outputSerialization="text/plain"
+	      whttp:faultSerialization="text/html"
+	      whttp:queryParameterSeparator="%"
+	      whttp:transferCodingDefault="chunked" >
+	      <documentation>
+	          Test that the specified attribute values appear in the component model.
+	          {http location} should be http://ws.apache.woden/location
+	          {http location ignore uncited} should be true
+	          {http method} should be GET
+	          {http input serialization} should be text/plain
+	          {http output serialization} should be text/plain
+	          {http fault serialization} should be text/html
+	          {http query parameter separator} should be %
+	          {http transfer coding default} should be chunked
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation2" >
+	      <documentation>
+	          Test that component model has expected defaults when attributes are omitted.
+	          {http location} should default to null
+	          {http location ignore uncited} should default to false
+	          {http method} should default to null (need spec fixed, so this defaults to Binding {http method default})
+	          {http input serialization} should default to application/xml if {http method} rules default to POST
+	          {http output serialization} should default to application/xml
+	          {http fault serialization} should default to application/xml
+	          {http query parameter separator} should default to null
+	          {http transfer coding default} should default to null
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation3"
+	      whttp:method="GET">
+	      <documentation>
+	          Test correct input/output serialization defaults for http method GET.
+	          {http input serialization} should default to application/x-www-form-urlencoded if {http method} is GET 	 
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation4"
+	      whttp:method="DELETE">
+	      <documentation>
+	          Test correct input/output serialization defaults for http method DELETE.
+	          {http input serialization} should default to application/x-www-form-urlencoded if {http method} is DELETE   	 
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation5"
+	      whttp:method="PUT">
+	      <documentation>
+	          Test correct input/output serialization defaults for http method PUT.
+	          {http input serialization} should default to application/xml if {http method} is PUT   	 
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation6"
+	      whttp:method="POST">
+	      <documentation>
+	          Test correct input/output serialization defaults for http method POST.
+	          {http input serialization} should default to application/xml if {http method} is POST   	 
+	      </documentation>
+	  </operation>
+	      
+	  <operation ref="tns:operation7"
+	      whttp:method="CONNECT">
+	      <documentation>
+	          Test correct input/output serialization defaults for http method 
+	          other than GET, DELETE, PUT or POST. Other http method types 
+	          include OPTIONS, HEAD, TRACE, CONNECT and serialization 
+	          shoiuld default to application/xml.
+	          {http input serialization} should default to application/xml if {http method} is CONNECT   	 
+	      </documentation>
+	  </operation>
+	  
+	</binding>
+    
+</description>
